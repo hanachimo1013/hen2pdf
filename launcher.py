@@ -23,7 +23,7 @@ PROVIDERS = {
 
 # REGEX FOR URL DETECTION
 REGEX_NHENTAI = r"nhentai\.net/g/(\d+)"
-REGEX_HITOMI = r"hitomi\.la/reader/(\d+)\.html|hitomi\.la/galleries/(\d+)\.html|hitomi\.la/.*/-(\d+)\.html"
+REGEX_HITOMI = r"hitomi\.la/reader/(\d+)\.html|hitomi\.la/galleries/(\d+)\.html|hitomi\.la/.*-(\d+)\.html"
 REGEX_PURURIN = r"pururin\.me/gallery/(\d+)"
 
 def detect_provider(input_str: str) -> (Optional[str], Optional[str]):
