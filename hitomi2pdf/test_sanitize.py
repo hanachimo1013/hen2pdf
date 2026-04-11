@@ -1,5 +1,5 @@
 import unittest
-from hitomi2pdf import Hitomi2PDF
+from .hitomi2pdf import Hitomi2PDF
 
 class TestHitomi2PDF(unittest.TestCase):
     def setUp(self):

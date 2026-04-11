@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import MagicMock
-from nhentai2pdf import Nhentai2PDF
+from .nhentai2pdf import Nhentai2PDF
 
 @pytest.fixture
 def nhentai():
@@ -89,7 +89,7 @@ def test_fetch_metadata_404(nhentai):
     mock_resp.status_code = 404
     nhentai.scraper.get = MagicMock(return_value=mock_resp)
 
-    with pytest.raises(Exception, match=r"Gallery 123 not found"):
+    with pytest.raises(Exception, match=r"\[Gallery or content does not exist or was removed\]"):
         nhentai.fetch_metadata("123")
 
 def test_fetch_metadata_other_error(nhentai):

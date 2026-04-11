@@ -2,7 +2,7 @@ import asyncio
 import os
 from unittest.mock import AsyncMock, MagicMock
 
-from hitomi2pdf import Hitomi2PDF
+from .hitomi2pdf import Hitomi2PDF
 
 def test_download_page_avif_success():
     downloader = Hitomi2PDF("test_output")

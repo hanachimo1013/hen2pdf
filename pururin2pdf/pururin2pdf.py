@@ -5,11 +5,35 @@ import aiohttp
 import cloudscraper
 import pikepdf
 import shutil
+import img2pdf
+import concurrent.futures
 from bs4 import BeautifulSoup
 from pathlib import Path
 from tqdm.asyncio import tqdm
 from functools import wraps
 from PIL import Image, UnidentifiedImageError
+
+def process_image(img_path, target_w=1600, target_h=2260):
+    try:
+        with Image.open(img_path) as img:
+            img = img.convert('RGB')
+            ratio = min(target_w / img.width, target_h / img.height)
+            new_size = (int(img.width * ratio), int(img.height * ratio))
+            resized_img = img.resize(new_size, Image.Resampling.LANCZOS)
+            canvas = Image.new('RGB', (target_w, target_h), (255, 255, 255))
+            canvas.paste(resized_img, ((target_w - new_size[0]) // 2, (target_h - new_size[1]) // 2))
+
+            proc_path = img_path + ".proc.jpg"
+            if os.path.exists(proc_path): os.remove(proc_path)
+            canvas.save(proc_path, "JPEG", quality=90)
+
+            img.close()
+            resized_img.close()
+            canvas.close()
+            return proc_path
+    except Exception as e:
+        print(f"[!] Error processing {img_path}: {e}")
+        return None
 
 # --- RETRY DECORATOR ---
 def retry_on_failure(max_retries=5, base_delay=2):
