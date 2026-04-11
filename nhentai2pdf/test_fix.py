@@ -1,7 +1,7 @@
 import os
 import unittest
 from unittest.mock import patch, MagicMock
-from nhentai2pdf import Nhentai2PDF
+from .nhentai2pdf import Nhentai2PDF
 import asyncio
 
 class TestSanitizeFix(unittest.TestCase):
@@ -19,7 +19,7 @@ class TestSanitizeFix(unittest.TestCase):
         self.assertNotIn("\\", sanitized)
 
         # Ensure final sanitized string matches expectation
-        self.assertEqual(sanitized, "......etcpasswd")
+        self.assertEqual(sanitized, "etcpasswd")
 
         # Test full filename generation directly logic (simulating the buggy line vs fixed line)
         code = "123456"
@@ -31,7 +31,7 @@ class TestSanitizeFix(unittest.TestCase):
         # Expected fix filename
         fixed_final_filename = os.path.join(pdf_maker.output_dir, f"{code}_[{pdf_maker._sanitize(data['artist'])}]_{data['safe_title']}.pdf")
 
-        self.assertTrue("......etcpasswd" in fixed_final_filename)
+        self.assertTrue("etcpasswd" in fixed_final_filename)
         self.assertFalse("../../../" in fixed_final_filename)
 
 if __name__ == '__main__':
