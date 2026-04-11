@@ -156,7 +156,16 @@ class Pururin2PDF:
         # Prepare final filename
         final_filename = os.path.join(self.output_dir, f"pururin_{code}_[{self._sanitize(data['artist'])}]_{data['safe_title']}.pdf")
         
-        img_files = sorted([os.path.join(temp_path, f) for f in os.listdir(temp_path) if f.endswith('.jpg')])
+        img_files = []
+        for f in os.listdir(temp_path):
+            if f.lower().endswith('.jpg') and not f.lower().endswith('.proc.jpg'):
+                img_files.append(os.path.join(temp_path, f))
+
+        # Strict integer sorting based on the numeric portion of the file name
+        try:
+            img_files.sort(key=lambda x: int(re.search(r'(\d+)', os.path.basename(x)).group(1)))
+        except Exception:
+            img_files.sort()
 
         print(f"[*] Normalizing and Compiling (1600x2260)...")
         TARGET_W, TARGET_H = 1600, 2260 
