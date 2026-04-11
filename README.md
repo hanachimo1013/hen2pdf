@@ -1,5 +1,5 @@
 # hen2pdf
-### Part of the *Luxurious Archive Architect* Series
+### Part of the Doujinshi Series
 
 **hen2pdf** is a high-performance, modular Python utility engineered to fetch digital galleries and compile them into standardized, archival-grade PDF documents. This tool is designed with a focus on image normalization, metadata integrity, and optimized delivery for high-fidelity viewing.
 
