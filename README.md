@@ -62,4 +62,4 @@ The tool will initialize the asynchronous session, parse the remote DOM for imag
 This project is licensed under the MIT License - see the LICENSE file for details.
 
 ---
-**Developed by:** [Montizon Jake](https://github.com/hanachimo1013)
+**Developed by:** [hanachimo](https://github.com/hanachimo1013)
