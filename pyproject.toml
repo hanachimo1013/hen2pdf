@@ -13,6 +13,8 @@ dependencies = [
     "playwright>=1.41.0",
     "pillow-avif-plugin>=1.4.3",
     "aiofiles>=23.2.1",
+    "img2pdf>=0.6.3",
+    "beautifulsoup4>=4.14.3",
 ]
 
 [project.scripts]
@@ -27,4 +29,10 @@ include = [
     "hitomi2pdf",
     "nhentai2pdf",
     "launcher.py"
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.2",
+    "pytest-asyncio>=1.2.0",
 ]
