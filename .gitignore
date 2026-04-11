@@ -1,0 +1,40 @@
+# Compiled Source
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Generated Content & Application Output
+outputs/
+temp*/
+*.pdf
+*.zip
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.webp
+*.avif
+
+# Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+
+# Testing and Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE and OS
+.DS_Store
+.idea/
+.vscode/
+*.code-workspace
+
+# Logging
+*.log
+
+# Nested Sub-repo artifacts (if merged)
+nhentai2pdf/.git
+hitomi2pdf/.git

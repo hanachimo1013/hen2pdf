@@ -1,0 +1,8 @@
+aiohttp
+pikepdf
+tqdm
+Pillow
+cloudscraper
+playwright
+pillow-avif-plugin
+aiofiles

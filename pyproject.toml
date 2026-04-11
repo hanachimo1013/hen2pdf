@@ -1,0 +1,30 @@
+[project]
+name = "hen2pdf-launcher"
+version = "0.1.0"
+description = "A unified, provider-based H-Manga to PDF downloader launcher."
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "aiohttp>=3.11.13",
+    "cloudscraper>=1.2.71",
+    "pikepdf>=9.5.2",
+    "pillow>=11.1.0",
+    "tqdm>=4.67.1",
+    "playwright>=1.41.0",
+    "pillow-avif-plugin>=1.4.3",
+    "aiofiles>=23.2.1",
+]
+
+[project.scripts]
+h2p = "launcher:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build]
+include = [
+    "hitomi2pdf",
+    "nhentai2pdf",
+    "launcher.py"
+]
