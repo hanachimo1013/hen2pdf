@@ -6,6 +6,7 @@ import aiohttp
 import aiofiles
 import pikepdf
 import shutil
+import img2pdf
 from typing import Dict
 from tqdm.asyncio import tqdm
 from functools import wraps
@@ -248,31 +249,13 @@ class Hitomi2PDF:
             except OSError as e:
                 print(f"[!] Target file exists but is locked: {e}")
 
-        images = []
-        first_img = None
         try:
-            # We skip re-sorting 'processed_img_files' here as tasks return in the exact original array order if mapped correctly.
-            # Wait, since tqdm.gather is used, results order is guaranteed to match tasks order!
-            first_img = Image.open(processed_img_files[0])
-            for p in processed_img_files[1:]:
-                images.append(Image.open(p))
-
-            first_img.save(
-                final_filename,
-                save_all=True,
-                append_images=images,
-                resolution=100.0,
-                quality=90
-            )
+            with open(final_filename, "wb") as f:
+                f.write(img2pdf.convert(processed_img_files))
             return True
         except Exception as e:
             print(f"[!] PDF Compilation Error: {e}")
             return False
-        finally:
-            if first_img:
-                first_img.close()
-            for i in images:
-                i.close()
 
     def _inject_metadata_sync(self, final_filename: str, title: str, tags: list, gallery_id: str) -> bool:
         if not os.path.exists(final_filename):

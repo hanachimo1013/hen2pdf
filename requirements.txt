@@ -6,3 +6,4 @@ cloudscraper
 playwright
 pillow-avif-plugin
 aiofiles
+img2pdf

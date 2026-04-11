@@ -2,8 +2,10 @@ import asyncio
 import os
 from unittest.mock import AsyncMock, patch
 
-from nhentai2pdf import Nhentai2PDF
+import pytest
+from .nhentai2pdf import Nhentai2PDF
 
+@pytest.mark.asyncio
 async def test_download_page_sanitization():
     # Setup
     pdf_generator = Nhentai2PDF(output_dir="test_outputs", concurrency_limit=1)

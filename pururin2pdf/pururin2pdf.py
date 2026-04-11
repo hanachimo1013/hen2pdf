@@ -5,11 +5,35 @@ import aiohttp
 import cloudscraper
 import pikepdf
 import shutil
+import img2pdf
+import concurrent.futures
 from bs4 import BeautifulSoup
 from pathlib import Path
 from tqdm.asyncio import tqdm
 from functools import wraps
 from PIL import Image, UnidentifiedImageError
+
+def process_image(img_path, target_w=1600, target_h=2260):
+    try:
+        with Image.open(img_path) as img:
+            img = img.convert('RGB')
+            ratio = min(target_w / img.width, target_h / img.height)
+            new_size = (int(img.width * ratio), int(img.height * ratio))
+            resized_img = img.resize(new_size, Image.Resampling.LANCZOS)
+            canvas = Image.new('RGB', (target_w, target_h), (255, 255, 255))
+            canvas.paste(resized_img, ((target_w - new_size[0]) // 2, (target_h - new_size[1]) // 2))
+
+            proc_path = img_path + ".proc.jpg"
+            if os.path.exists(proc_path): os.remove(proc_path)
+            canvas.save(proc_path, "JPEG", quality=90)
+
+            img.close()
+            resized_img.close()
+            canvas.close()
+            return proc_path
+    except Exception as e:
+        print(f"[!] Error processing {img_path}: {e}")
+        return None
 
 # --- RETRY DECORATOR ---
 def retry_on_failure(max_retries=5, base_delay=2):
@@ -173,39 +197,22 @@ class Pururin2PDF:
         TARGET_W, TARGET_H = 1600, 2260 
         processed_img_files = []
 
-        for img_path in img_files:
-            try:
-                with Image.open(img_path) as img:
-                    img = img.convert('RGB')
-                    ratio = min(TARGET_W / img.width, TARGET_H / img.height)
-                    new_size = (int(img.width * ratio), int(img.height * ratio))
-                    resized_img = img.resize(new_size, Image.Resampling.LANCZOS)
-                    canvas = Image.new('RGB', (TARGET_W, TARGET_H), (255, 255, 255))
-                    canvas.paste(resized_img, ((TARGET_W - new_size[0]) // 2, (TARGET_H - new_size[1]) // 2))
-                    
-                    proc_path = img_path + ".proc.jpg"
-                    if os.path.exists(proc_path): os.remove(proc_path)
-                    canvas.save(proc_path, "JPEG", quality=90)
-                    processed_img_files.append(proc_path)
-                    
-                    img.close()
-                    resized_img.close()
-                    canvas.close()
-            except Exception as e:
-                print(f"[!] Error processing {img_path}: {e}")
+        loop = asyncio.get_running_loop()
+        with concurrent.futures.ProcessPoolExecutor() as executor:
+            tasks = [
+                loop.run_in_executor(executor, process_image, img_path, TARGET_W, TARGET_H)
+                for img_path in img_files
+            ]
+            results = await tqdm.gather(*tasks, desc="Processing images", unit="img")
+
+            for res in results:
+                if res:
+                    processed_img_files.append(res)
 
         if processed_img_files:
             try:
-                images = [Image.open(p) for p in processed_img_files[1:]]
-                with Image.open(processed_img_files[0]) as first_img:
-                    first_img.save(
-                        final_filename, 
-                        save_all=True, 
-                        append_images=images, 
-                        resolution=100.0, 
-                        quality=90
-                    )
-                for i in images: i.close()
+                with open(final_filename, "wb") as f:
+                    f.write(img2pdf.convert(processed_img_files))
                 
                 # Metadata
                 print(f"[*] Finalizing metadata...")

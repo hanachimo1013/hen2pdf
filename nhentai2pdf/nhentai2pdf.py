@@ -6,9 +6,32 @@ import aiohttp
 import cloudscraper
 import pikepdf
 import shutil
+import img2pdf
+import concurrent.futures
 from tqdm.asyncio import tqdm
 from functools import wraps
 from PIL import Image, UnidentifiedImageError
+
+def process_image(img_path, target_w=1600, target_h=2260):
+    try:
+        with Image.open(img_path) as img:
+            img = img.convert('RGB')
+            ratio = min(target_w / img.width, target_h / img.height)
+            new_size = (int(img.width * ratio), int(img.height * ratio))
+            resized_img = img.resize(new_size, Image.Resampling.LANCZOS)
+            canvas = Image.new('RGB', (target_w, target_h), (255, 255, 255))
+            canvas.paste(resized_img, ((target_w - new_size[0]) // 2, (target_h - new_size[1]) // 2))
+
+            proc_path = img_path + ".jpg"
+            canvas.save(proc_path, "JPEG", quality=90)
+
+            img.close()
+            resized_img.close()
+            canvas.close()
+            return proc_path
+    except (UnidentifiedImageError, OSError, ValueError) as e:
+        print(f"[!] Error processing {img_path}: {e}")
+        return None
 
 # --- RETRY DECORATOR ---
 def retry_on_failure(max_retries=5, base_delay=2):
@@ -41,7 +64,8 @@ class Nhentai2PDF:
             os.makedirs(self.output_dir, exist_ok=True)
 
     def _sanitize(self, text):
-        return re.sub(r'[\\/*?:"<>|]', "", text).strip().replace(" ", "_")
+        # We also need to sanitize '.' for path traversals
+        return re.sub(r'[\\/*?:"<>|=\.]', "", text).strip().replace(" ", "_")
 
     def fetch_metadata(self, code):
         """Fetch metadata using the v2 API."""
@@ -129,8 +153,9 @@ class Nhentai2PDF:
 
     async def download_page(self, session, media_id, page_num, ext, temp_path):
         async with self.semaphore:
-            url = f"https://i.nhentai.net/galleries/{media_id}/{page_num}.{ext}"
-            file_path = os.path.join(temp_path, f"{page_num:04d}.{ext}")
+            safe_ext = self._sanitize(ext)
+            url = f"https://i.nhentai.net/galleries/{media_id}/{page_num}.{safe_ext}"
+            file_path = os.path.join(temp_path, f"{page_num:04d}.{safe_ext}")
             try:
                 return await self._fetch_image(session, url, file_path)
             except Exception:
@@ -198,36 +223,20 @@ class Nhentai2PDF:
         TARGET_W, TARGET_H = 1600, 2260 
         processed_img_files = []
 
-        for img_path in img_files:
-            try:
-                with Image.open(img_path) as img:
-                    img = img.convert('RGB')
-                    ratio = min(TARGET_W / img.width, TARGET_H / img.height)
-                    new_size = (int(img.width * ratio), int(img.height * ratio))
-                    resized_img = img.resize(new_size, Image.Resampling.LANCZOS)
-                    canvas = Image.new('RGB', (TARGET_W, TARGET_H), (255, 255, 255))
-                    canvas.paste(resized_img, ((TARGET_W - new_size[0]) // 2, (TARGET_H - new_size[1]) // 2))
-                    
-                    proc_path = img_path + ".jpg"
-                    canvas.save(proc_path, "JPEG", quality=90)
-                    processed_img_files.append(proc_path)
-                    
-                    # Prevent memory ballooning by explicitly releasing image buffers
-                    img.close()
-                    resized_img.close()
-                    canvas.close()
-            except (UnidentifiedImageError, OSError, ValueError) as e:
-                print(f"[!] Error processing {img_path}: {e}")
+        loop = asyncio.get_running_loop()
+        with concurrent.futures.ProcessPoolExecutor() as executor:
+            tasks = [
+                loop.run_in_executor(executor, process_image, img_path, TARGET_W, TARGET_H)
+                for img_path in img_files
+            ]
+            results = await tqdm.gather(*tasks, desc="Processing images", unit="img")
+
+            for res in results:
+                if res:
+                    processed_img_files.append(res)
 
         if processed_img_files:
-            images = []
-            first_img = None
             try:
-                # 'processed_img_files' is built sequentially from strictly-ordered 'img_files'
-                first_img = Image.open(processed_img_files[0])
-                for p in processed_img_files[1:]:
-                    images.append(Image.open(p))
-                
                 if os.path.exists(final_filename):
                     try:
                         os.remove(final_filename)
@@ -235,22 +244,12 @@ class Nhentai2PDF:
                     except OSError as e:
                         print(f"[!] Target file exists but is locked/cannot be overwritten: {e}")
                         
-                first_img.save(
-                    final_filename, 
-                    save_all=True, 
-                    append_images=images, 
-                    resolution=100.0, 
-                    quality=90
-                )
+                with open(final_filename, "wb") as f:
+                    f.write(img2pdf.convert(processed_img_files))
             except Exception as e:
                 print(f"[!] PDF Compilation Error: {e}")
                 shutil.rmtree(temp_path)
                 return
-            finally:
-                if first_img:
-                    first_img.close()
-                for i in images:
-                    i.close()
         
         # Inject Metadata (with race-condition retry for network drives)
         print(f"[*] Finalizing metadata and linearization...")
