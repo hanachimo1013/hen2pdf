@@ -43,6 +43,8 @@ class Pururin2PDF:
         url = f"https://pururin.me/gallery/{code}/"
         resp = self.scraper.get(url)
         
+        if resp.status_code == 404:
+            raise Exception("[Gallery or content does not exist or was removed]")
         if resp.status_code != 200:
             raise Exception(f"HTTP {resp.status_code}: Error fetching gallery page.")
 

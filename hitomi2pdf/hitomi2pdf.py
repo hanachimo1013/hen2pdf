@@ -84,7 +84,9 @@ class Hitomi2PDF:
             
             try:
                 # Wait for core variables to be defined in the page context
-                await page.goto(reader_url, wait_until="networkidle")
+                response = await page.goto(reader_url, wait_until="networkidle")
+                if response and response.status == 404:
+                    raise Exception("[Gallery or content does not exist or was removed]")
                 
                 # Extract solved data using the page's own JS functions
                 # Wait for 'galleryinfo' script to load

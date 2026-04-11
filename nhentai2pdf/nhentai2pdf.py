@@ -51,7 +51,7 @@ class Nhentai2PDF:
         if resp.status_code == 403:
             raise Exception("Access Denied (Cloudflare). Try updating cloudscraper or using a VPN.")
         if resp.status_code == 404:
-            raise Exception(f"Gallery {code} not found (might have been removed).")
+            raise Exception("[Gallery or content does not exist or was removed]")
         if resp.status_code != 200:
             raise Exception(f"HTTP {resp.status_code}: Error fetching metadata.")
 
