@@ -1,3 +1,4 @@
+import re
 import pytest
 from unittest.mock import MagicMock
 from .nhentai2pdf import Nhentai2PDF
@@ -121,3 +122,20 @@ def test_fetch_metadata_empty_pages_error(nhentai):
 
     with pytest.raises(Exception, match=r"Gallery found but could not fetch image list"):
         nhentai.fetch_metadata("123")
+
+@pytest.mark.asyncio
+async def test_download_page_exception(nhentai):
+    session = MagicMock()
+    media_id = "123456"
+    page_num = 1
+    ext = "jpg"
+    temp_path = "temp_dir"
+
+    # Mock _fetch_image to raise an Exception
+    nhentai._fetch_image = MagicMock(side_effect=Exception("Test Exception"))
+
+    # Call download_page
+    result = await nhentai.download_page(session, media_id, page_num, ext, temp_path)
+
+    # Verify that it caught the exception and returned False
+    assert result is False
