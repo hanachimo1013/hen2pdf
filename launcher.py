@@ -10,6 +10,7 @@ try:
     from nhentai2pdf.nhentai2pdf import Nhentai2PDF
     from hitomi2pdf.hitomi2pdf import Hitomi2PDF
     from pururin2pdf.pururin2pdf import Pururin2PDF
+    from ehen2pdf_ext.e_hentai2pdf import Ehentai2PDF
     from loose_pdf_compiler.extractor_compiler import LoosePDFCompiler
 except ImportError as e:
     print(f"[!] Error importing providers: {e}")
@@ -20,6 +21,7 @@ PROVIDERS = {
     "nhentai": Nhentai2PDF,
     "hitomi": Hitomi2PDF,
     "pururin": Pururin2PDF,
+    "e-hentai": Ehentai2PDF,
     "loose_compiler": LoosePDFCompiler
 }
 
@@ -27,6 +29,7 @@ PROVIDERS = {
 REGEX_NHENTAI = r"nhentai\.net/g/(\d+)"
 REGEX_HITOMI = r"hitomi\.la/reader/(\d+)\.html|hitomi\.la/galleries/(\d+)\.html|hitomi\.la/.*-(\d+)\.html"
 REGEX_PURURIN = r"pururin\.me/gallery/(\d+)"
+REGEX_EHENTAI = r"e-hentai\.org/g/(\d+/[a-f0-9]+)"
 
 def detect_provider(input_str: str) -> (Optional[str], Optional[str]):
     """Detect provider and extract ID from a URL or raw ID."""
@@ -50,6 +53,11 @@ def detect_provider(input_str: str) -> (Optional[str], Optional[str]):
     match_pu = re.search(REGEX_PURURIN, input_str)
     if match_pu:
         return "pururin", match_pu.group(1)
+        
+    # Check E-Hentai URL
+    match_eh = re.search(REGEX_EHENTAI, input_str)
+    if match_eh:
+        return "e-hentai", match_eh.group(1)
         
     return None, input_str
 
@@ -86,7 +94,13 @@ async def run_launcher():
             
             # 2. Input Code
             print(f"\n[*] Current Provider: {current_provider}")
-            target_input = input("Enter Gallery ID or URL (or 'back' to change provider): ").strip()
+            
+            if current_provider == "loose_compiler":
+                prompt = "Press Enter to start scanning (or 'back' to change provider): "
+            else:
+                prompt = "Enter Gallery ID or URL (or 'back' to change provider): "
+            
+            target_input = input(prompt).strip()
             
             if target_input.lower() in ('back', 'b'):
                 current_provider = None
@@ -139,7 +153,10 @@ async def run_launcher():
                 print("[!] Task did not complete or was aborted.")
             
             print("\nWhat would you like to do next?")
-            print(f"  1. Enter another code for {current_provider}")
+            if current_provider == "loose_compiler":
+                print(f"  1. Run {current_provider} again")
+            else:
+                print(f"  1. Enter another code for {current_provider}")
             print(f"  2. Change provider")
             print(f"  3. Exit program")
             

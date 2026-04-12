@@ -17,6 +17,7 @@ For those who appreciate the structural integrity of a well-organized library, h
 | **nHentai Wing** | `nhentai2pdf/nhentai2pdf.py` — Specialized v2 API integration for precise metadata. |
 | **Hitomi Wing** | `hitomi2pdf/hitomi2pdf.py` — Playwright-powered engine for dynamic DOM resolution. |
 | **Pururin Wing** | `pururin2pdf/pururin2pdf.py` — Dedicated scraper for the Pururin repository. |
+| **E-Hentai Wing** | `ehen2pdf_ext/e_hentai2pdf.py` — High-performance scraper for the E-Hentai archives. |
 | **The Salvage Yard** | `loose_pdf_compiler/extractor_compiler.py` — Compiles your existing local image archives (.zip) into normalized PDFs. |
 
 ---
