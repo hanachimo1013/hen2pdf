@@ -10,6 +10,7 @@ try:
     from nhentai2pdf.nhentai2pdf import Nhentai2PDF
     from hitomi2pdf.hitomi2pdf import Hitomi2PDF
     from pururin2pdf.pururin2pdf import Pururin2PDF
+    from loose_pdf_compiler.extractor_compiler import LoosePDFCompiler
 except ImportError as e:
     print(f"[!] Error importing providers: {e}")
     sys.exit(1)
@@ -18,7 +19,8 @@ except ImportError as e:
 PROVIDERS = {
     "nhentai": Nhentai2PDF,
     "hitomi": Hitomi2PDF,
-    "pururin": Pururin2PDF
+    "pururin": Pururin2PDF,
+    "loose_compiler": LoosePDFCompiler
 }
 
 # REGEX FOR URL DETECTION
@@ -91,11 +93,17 @@ async def run_launcher():
                 continue
             if target_input.lower() in ('exit', 'quit', 'q', 'esc'):
                 return
-            if not target_input:
+            
+            if not target_input and current_provider != "loose_compiler":
                 continue
 
-            # Parse target input
-            detected_prov, gallery_id = detect_provider(target_input)
+            # Special handling for loose_compiler (doesn't need an ID input, but we'll accept 'start' or enter)
+            if current_provider == "loose_compiler":
+                gallery_id = "local_scan"
+                detected_prov = "loose_compiler"
+            else:
+                # Parse target input
+                detected_prov, gallery_id = detect_provider(target_input)
             
             # If they gave a URL to a completely different provider, we can auto-switch
             if detected_prov and detected_prov != current_provider:
