@@ -1,0 +1,1 @@
+from .hentai2readpdf import Hentai2ReadPDF

@@ -19,6 +19,7 @@ For those who appreciate the structural integrity of a well-organized library, h
 | **Pururin Wing** | `pururin2pdf/pururin2pdf.py` — Dedicated scraper for the Pururin repository. |
 | **E-Hentai Wing** | `ehen2pdf_ext/e_hentai2pdf.py` — High-performance scraper for the E-Hentai archives. |
 | **Hentai20 Wing** | `hentai20_pdf/hentai20_pdf.py` — Integrated chapter-based scraper for Hentai20.io. |
+| **Hentai2Read Wing** | `hentai2readpdf/hentai2readpdf.py` — All-Chapter scraper for Hentai2Read site. |
 | **The Salvage Yard** | `loose_pdf_compiler/extractor_compiler.py` — Compiles your existing local image archives (.zip) into normalized PDFs. |
 
 ---

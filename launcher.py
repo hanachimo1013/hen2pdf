@@ -10,9 +10,10 @@ try:
     from nhentai2pdf.nhentai2pdf import Nhentai2PDF
     from hitomi2pdf.hitomi2pdf import Hitomi2PDF
     from pururin2pdf.pururin2pdf import Pururin2PDF
-    from ehen2pdf_ext.e_hentai2pdf import Ehentai2PDF
+    from ehen2pdf.e_hentai2pdf import Ehentai2PDF
     from hentai20_pdf.hentai20_pdf import Hentai20PDF
     from loose_pdf_compiler.extractor_compiler import LoosePDFCompiler
+    from hentai2readpdf.hentai2readpdf import Hentai2ReadPDF
 except ImportError as e:
     print(f"[!] Error importing providers: {e}")
     sys.exit(1)
@@ -24,6 +25,7 @@ PROVIDERS = {
     "pururin": Pururin2PDF,
     "e-hentai": Ehentai2PDF,
     "hentai20": Hentai20PDF,
+    "hentai2read": Hentai2ReadPDF,
     "loose_compiler": LoosePDFCompiler
 }
 
@@ -33,6 +35,7 @@ REGEX_HITOMI = r"hitomi\.la/reader/(\d+)\.html|hitomi\.la/galleries/(\d+)\.html|
 REGEX_PURURIN = r"pururin\.me/gallery/(\d+)"
 REGEX_EHENTAI = r"e-hentai\.org/g/(\d+/[a-f0-9]+)"
 REGEX_HENTAI20 = r"hentai20\.io/manga/([a-z0-9-]+)|hentai20\.io/([a-z0-9-]+)-chapter-"
+REGEX_HENTAI2READ = r"hentai2read\.com/([a-z0-9_]+)"
 
 def detect_provider(input_str: str) -> (Optional[str], Optional[str]):
     """Detect provider and extract ID from a URL or raw ID."""
@@ -68,6 +71,10 @@ def detect_provider(input_str: str) -> (Optional[str], Optional[str]):
         # Match group 1 or 2 depending on which pattern matched
         h20_id = match_h20.group(1) or match_h20.group(2)
         return "hentai20", h20_id
+    match_h2r = re.search(REGEX_HENTAI2READ, input_str)
+    if match_h2r:
+        h2r_id = match_h2r.group(1)
+        return "hentai20", h2r_id
         
     return None, input_str
 

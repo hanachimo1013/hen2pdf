@@ -28,6 +28,11 @@ build-backend = "hatchling.build"
 include = [
     "hitomi2pdf",
     "nhentai2pdf",
+    "pururin2pdf",
+    "ehen2pdf",
+    "hentai20_pdf",
+    "loose_pdf_compiler",
+    "hentai2readpdf",
     "launcher.py"
 ]
 
